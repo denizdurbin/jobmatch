@@ -1,3 +1,4 @@
+using JobMatch.Api.Endpoints;
 using JobMatch.Infrastructure;
 using JobMatch.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -30,5 +31,7 @@ app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
     }
     return Results.Ok(new { status = "healthy", database = "ok" });
 }).WithTags("Health");
+
+app.MapPostingEndpoints();
 
 app.Run();
