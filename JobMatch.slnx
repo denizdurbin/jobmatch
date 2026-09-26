@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JobMatch.Api/JobMatch.Api.csproj" />
+    <Project Path="src/JobMatch.Core/JobMatch.Core.csproj" />
+    <Project Path="src/JobMatch.Infrastructure/JobMatch.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/JobMatch.Tests/JobMatch.Tests.csproj" />
+  </Folder>
+</Solution>
