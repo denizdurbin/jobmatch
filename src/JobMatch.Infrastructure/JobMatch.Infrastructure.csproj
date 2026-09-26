@@ -6,9 +6,16 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.10.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <PackageReference Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
+  </ItemGroup>
+
+  <!-- prompts live in /prompts at the repo root, copy them next to the dll -->
+  <ItemGroup>
+    <None Include="..\..\prompts\*.md" LinkBase="prompts" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

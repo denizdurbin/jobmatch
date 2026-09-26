@@ -1,9 +1,14 @@
+using System.ClientModel;
+using JobMatch.Infrastructure.Ai;
 using JobMatch.Infrastructure.Data;
 using JobMatch.Infrastructure.Ingestion;
 using JobMatch.Infrastructure.Processing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using OpenAI;
 
 namespace JobMatch.Infrastructure;
 
@@ -21,6 +26,25 @@ public static class DependencyInjection
         {
             client.Timeout = TimeSpan.FromSeconds(20);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("JobMatch/0.1 (personal project)");
+        });
+
+        // LLM (groq)
+        services.Configure<GroqOptions>(config.GetSection("Groq"));
+        services.AddSingleton<PromptLoader>();
+        services.AddSingleton<IChatClient>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<GroqOptions>>().Value;
+            if (string.IsNullOrWhiteSpace(options.ApiKey))
+            {
+                throw new InvalidOperationException(
+                    "Groq:ApiKey is not set. Run: dotnet user-secrets set \"Groq:ApiKey\" \"<your key>\" --project src/JobMatch.Api");
+            }
+
+            var client = new OpenAIClient(new ApiKeyCredential(options.ApiKey), new OpenAIClientOptions
+            {
+                Endpoint = new Uri(options.BaseUrl)
+            });
+            return client.GetChatClient(options.Model).AsIChatClient();
         });
 
         services.AddScoped<PostingPipeline>();

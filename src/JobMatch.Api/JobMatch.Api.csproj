@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <PropertyGroup>
+    <UserSecretsId>6ab8a469-f1ff-43fc-a642-e1b2b3f268ae</UserSecretsId>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\JobMatch.Infrastructure\JobMatch.Infrastructure.csproj" />
   </ItemGroup>
