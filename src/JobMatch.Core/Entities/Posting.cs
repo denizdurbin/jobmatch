@@ -13,4 +13,7 @@ public class Posting
     public PostingStatus Status { get; set; }
     public DateTime FetchedAt { get; set; }
     public string? Error { get; set; }
+
+    public PostingExtraction? Extraction { get; set; }
+    public List<PostingSkill> Skills { get; set; } = new();
 }

@@ -126,11 +126,25 @@ public static class PostingEndpoints
 
     private static async Task<IResult> GetPosting(Guid id, AppDbContext db, CancellationToken ct)
     {
-        var p = await db.Postings.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+        var p = await db.Postings.AsNoTracking()
+            .Include(x => x.Extraction)
+            .Include(x => x.Skills)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
         if (p == null)
         {
             return Results.NotFound();
         }
-        return Results.Ok(new PostingDetails(p.Id, p.Source.ToString(), p.Url, p.Title, p.Company, p.Status.ToString(), p.Error, p.FetchedAt, p.RawText));
+
+        ExtractionDto? extraction = null;
+        if (p.Extraction != null)
+        {
+            var e = p.Extraction;
+            extraction = new ExtractionDto(e.Seniority, e.MinYears, e.ContractType, e.RemotePolicy, e.City,
+                e.SalaryMin, e.SalaryMax, e.SalaryCurrency, e.SalaryPeriod, e.Model, e.PromptVersion, e.ExtractedAt);
+        }
+        var skills = p.Skills.Select(s => new SkillDto(s.SkillName, s.NormalizedName, s.Required, s.Evidence)).ToList();
+
+        return Results.Ok(new PostingDetails(p.Id, p.Source.ToString(), p.Url, p.Title, p.Company, p.Status.ToString(), p.Error,
+            p.FetchedAt, p.RawText, extraction, skills));
     }
 }

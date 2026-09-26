@@ -15,6 +15,24 @@ public record PostingDetails(
     string Status,
     string? Error,
     DateTime FetchedAt,
-    string RawText);
+    string RawText,
+    ExtractionDto? Extraction,
+    List<SkillDto> Skills);
+
+public record ExtractionDto(
+    string Seniority,
+    int? MinYears,
+    string ContractType,
+    string RemotePolicy,
+    string? City,
+    decimal? SalaryMin,
+    decimal? SalaryMax,
+    string? SalaryCurrency,
+    string? SalaryPeriod,
+    string Model,
+    string PromptVersion,
+    DateTime ExtractedAt);
+
+public record SkillDto(string Name, string NormalizedName, bool Required, string Evidence);
 
 public record PagedResult<T>(List<T> Items, int Page, int PageSize, int Total);

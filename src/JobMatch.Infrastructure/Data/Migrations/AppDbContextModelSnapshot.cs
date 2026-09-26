@@ -78,6 +78,131 @@ namespace JobMatch.Infrastructure.Data.Migrations
 
                     b.ToTable("Postings");
                 });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.PostingExtraction", b =>
+                {
+                    b.Property<Guid>("PostingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContractType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ExtractedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LanguagesJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int?>("MinYears")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PromptVersion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("RemotePolicy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SalaryCurrency")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("SalaryMax")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<decimal?>("SalaryMin")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<string>("SalaryPeriod")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Seniority")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("PostingId");
+
+                    b.HasIndex("City");
+
+                    b.HasIndex("ContractType");
+
+                    b.ToTable("PostingExtractions");
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.PostingSkill", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PostingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Required")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SkillName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName");
+
+                    b.HasIndex("PostingId");
+
+                    b.ToTable("PostingSkills");
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.PostingExtraction", b =>
+                {
+                    b.HasOne("JobMatch.Core.Entities.Posting", null)
+                        .WithOne("Extraction")
+                        .HasForeignKey("JobMatch.Core.Entities.PostingExtraction", "PostingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.PostingSkill", b =>
+                {
+                    b.HasOne("JobMatch.Core.Entities.Posting", null)
+                        .WithMany("Skills")
+                        .HasForeignKey("PostingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.Posting", b =>
+                {
+                    b.Navigation("Extraction");
+
+                    b.Navigation("Skills");
+                });
 #pragma warning restore 612, 618
         }
     }
