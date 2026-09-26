@@ -1,0 +1,17 @@
+Développeur .NET Junior (H/F) - CDI - Lyon
+
+Nous recherchons un développeur .NET junior pour rejoindre notre équipe produit.
+
+Vos missions :
+- Développer de nouvelles fonctionnalités sur notre API en C# / ASP.NET Core
+- Écrire des tests unitaires
+- Participer aux revues de code
+
+Profil recherché :
+- Première expérience (stage ou alternance acceptés) en C#
+- Bonne connaissance de SQL Server
+- Docker est un plus
+- Anglais technique
+
+Télétravail : 2 jours par semaine.
+Salaire : 36 000 - 42 000 € brut annuel.

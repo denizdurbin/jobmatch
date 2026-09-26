@@ -22,4 +22,8 @@
     <ProjectReference Include="..\..\src\JobMatch.Infrastructure\JobMatch.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="TestData\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -1,6 +1,7 @@
 using System.ClientModel;
 using JobMatch.Infrastructure.Ai;
 using JobMatch.Infrastructure.Data;
+using JobMatch.Infrastructure.Extraction;
 using JobMatch.Infrastructure.Ingestion;
 using JobMatch.Infrastructure.Processing;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,7 @@ public static class DependencyInjection
             return client.GetChatClient(options.Model).AsIChatClient();
         });
 
+        services.AddScoped<PostingExtractor>();
         services.AddScoped<PostingPipeline>();
 
         return services;
