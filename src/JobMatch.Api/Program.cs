@@ -1,4 +1,5 @@
 using JobMatch.Api.Endpoints;
+using JobMatch.Api.Processing;
 using JobMatch.Infrastructure;
 using JobMatch.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSingleton<ProcessingQueue>();
+builder.Services.AddHostedService<PostingProcessor>();
 
 var app = builder.Build();
 

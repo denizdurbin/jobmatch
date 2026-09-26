@@ -1,3 +1,4 @@
+using JobMatch.Api.Processing;
 using JobMatch.Core.Entities;
 using JobMatch.Core.Text;
 using JobMatch.Infrastructure.Data;
@@ -14,7 +15,7 @@ public static class PostingEndpoints
         group.MapPost("/manual", AddManualPosting);
     }
 
-    private static async Task<IResult> AddManualPosting(ManualPostingRequest request, AppDbContext db, CancellationToken ct)
+    private static async Task<IResult> AddManualPosting(ManualPostingRequest request, AppDbContext db, ProcessingQueue queue, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(request.Text))
         {
@@ -53,6 +54,8 @@ public static class PostingEndpoints
         };
         db.Postings.Add(posting);
         await db.SaveChangesAsync(ct);
+
+        await queue.EnqueueAsync(posting.Id, ct);
 
         return Results.Accepted($"/postings/{posting.Id}", new PostingCreatedResponse(posting.Id, posting.Status.ToString(), false));
     }
