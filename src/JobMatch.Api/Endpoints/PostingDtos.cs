@@ -4,7 +4,16 @@ public record ManualPostingRequest(string? Text, string? Url);
 
 public record PostingCreatedResponse(Guid Id, string Status, bool Duplicate);
 
-public record PostingSummary(Guid Id, string? Title, string? Company, string Source, string Status, DateTime FetchedAt);
+public record PostingSummary(
+    Guid Id,
+    string? Title,
+    string? Company,
+    string Source,
+    string Status,
+    string? City,
+    string? ContractType,
+    string? RemotePolicy,
+    DateTime FetchedAt);
 
 public record PostingDetails(
     Guid Id,
