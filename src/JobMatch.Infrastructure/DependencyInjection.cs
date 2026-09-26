@@ -1,4 +1,5 @@
 using JobMatch.Infrastructure.Data;
+using JobMatch.Infrastructure.Ingestion;
 using JobMatch.Infrastructure.Processing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,12 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql => npgsql.UseVector()));
+
+        services.AddHttpClient<UrlTextFetcher>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(20);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("JobMatch/0.1 (personal project)");
+        });
 
         services.AddScoped<PostingPipeline>();
 

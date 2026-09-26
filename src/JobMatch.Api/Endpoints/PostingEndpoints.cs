@@ -2,6 +2,7 @@ using JobMatch.Api.Processing;
 using JobMatch.Core.Entities;
 using JobMatch.Core.Text;
 using JobMatch.Infrastructure.Data;
+using JobMatch.Infrastructure.Ingestion;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobMatch.Api.Endpoints;
@@ -15,17 +16,45 @@ public static class PostingEndpoints
         group.MapPost("/manual", AddManualPosting);
     }
 
-    private static async Task<IResult> AddManualPosting(ManualPostingRequest request, AppDbContext db, ProcessingQueue queue, CancellationToken ct)
+    private static async Task<IResult> AddManualPosting(ManualPostingRequest request, AppDbContext db, ProcessingQueue queue,
+        UrlTextFetcher fetcher, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Text))
+        string text;
+        if (!string.IsNullOrWhiteSpace(request.Text))
+        {
+            text = request.Text.Trim();
+        }
+        else if (!string.IsNullOrWhiteSpace(request.Url))
+        {
+            if (!Uri.TryCreate(request.Url, UriKind.Absolute, out var uri) || (uri.Scheme != "http" && uri.Scheme != "https"))
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["url"] = ["Not a valid http(s) url."]
+                });
+            }
+
+            try
+            {
+                text = await fetcher.FetchTextAsync(uri, ct);
+            }
+            catch (HttpRequestException ex)
+            {
+                return Results.Problem($"Could not download the page: {ex.Message}", statusCode: 502);
+            }
+            catch (TaskCanceledException)
+            {
+                return Results.Problem("Downloading the page timed out.", statusCode: 504);
+            }
+        }
+        else
         {
             return Results.ValidationProblem(new Dictionary<string, string[]>
             {
-                ["text"] = ["Paste the posting text."]
+                ["text"] = ["Provide either the posting text or a url."]
             });
         }
 
-        string text = request.Text.Trim();
         if (text.Length < 50)
         {
             return Results.ValidationProblem(new Dictionary<string, string[]>
