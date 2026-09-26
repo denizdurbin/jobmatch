@@ -33,4 +33,10 @@ public class TextNormalizerTests
     {
         TextNormalizer.Hash("hello").Length.ShouldBe(64);
     }
+
+    [Fact]
+    public void Hash_ignores_casing()
+    {
+        TextNormalizer.Hash("Développeur C# H/F").ShouldBe(TextNormalizer.Hash("développeur c# h/f"));
+    }
 }

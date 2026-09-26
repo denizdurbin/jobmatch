@@ -34,10 +34,10 @@ public static class TextNormalizer
         return sb.ToString().Trim();
     }
 
-    // sha256 of the normalized text, used to spot the same posting pasted twice
+    // sha256 of the normalized, lowercased text, used to spot the same posting pasted twice
     public static string Hash(string text)
     {
-        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(Normalize(text)));
+        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(Normalize(text).ToLowerInvariant()));
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }
