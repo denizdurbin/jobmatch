@@ -11,3 +11,7 @@ csharp_style_namespace_declarations = file_scoped:warning
 
 [*.{json,yml,yaml,csproj,props}]
 indent_size = 2
+
+# ef core migrations are generated, don't style check them
+[**/Migrations/*.cs]
+generated_code = true
