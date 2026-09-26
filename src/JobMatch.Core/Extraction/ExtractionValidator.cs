@@ -87,6 +87,7 @@ public static class ExtractionValidator
         return outcome;
     }
 
+    // returns the allowed spelling ("cdi" -> "CDI"), or null if the value is not allowed
     private static string? Canonical(string? value, string[] allowed)
     {
         if (value == null)
@@ -96,7 +97,7 @@ public static class ExtractionValidator
 
         foreach (var option in allowed)
         {
-            if (option == value.Trim())
+            if (string.Equals(option, value.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 return option;
             }

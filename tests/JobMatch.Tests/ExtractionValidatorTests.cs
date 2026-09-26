@@ -78,4 +78,14 @@ public class ExtractionValidatorTests
         outcome.DroppedSkills.Single().Name.ShouldBe("Kubernetes");
         outcome.Cleaned.Skills.ShouldNotContain(s => s.Name == "Kubernetes");
     }
+
+    [Fact]
+    public void Enum_values_are_case_insensitive_and_canonicalized()
+    {
+        var outcome = ExtractionValidator.Validate(Valid() with { ContractType = "cdi", Seniority = "Junior" }, RawText);
+
+        outcome.IsValid.ShouldBeTrue();
+        outcome.Cleaned.ContractType.ShouldBe("CDI");
+        outcome.Cleaned.Seniority.ShouldBe("junior");
+    }
 }
