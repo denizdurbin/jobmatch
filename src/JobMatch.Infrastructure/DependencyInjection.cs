@@ -1,6 +1,7 @@
 using System.ClientModel;
 using JobMatch.Infrastructure.Ai;
 using JobMatch.Infrastructure.Data;
+using JobMatch.Infrastructure.Embeddings;
 using JobMatch.Infrastructure.Extraction;
 using JobMatch.Infrastructure.Ingestion;
 using JobMatch.Infrastructure.Processing;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OllamaSharp;
 using OpenAI;
 
 namespace JobMatch.Infrastructure;
@@ -48,7 +50,16 @@ public static class DependencyInjection
             return client.GetChatClient(options.Model).AsIChatClient();
         });
 
+        // embeddings (ollama, runs in docker compose)
+        services.Configure<OllamaOptions>(config.GetSection("Ollama"));
+        services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
+            return new OllamaApiClient(new Uri(options.Url), options.EmbeddingModel);
+        });
+
         services.AddScoped<PostingExtractor>();
+        services.AddScoped<EmbeddingService>();
         services.AddScoped<PostingPipeline>();
 
         return services;

@@ -5,6 +5,9 @@ namespace JobMatch.Infrastructure.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    // nomic-embed-text gives 768 numbers per text. if the model changes, this and the migrations change too
+    public const int EmbeddingDimensions = 768;
+
     public DbSet<Posting> Postings => Set<Posting>();
     public DbSet<PostingExtraction> PostingExtractions => Set<PostingExtraction>();
     public DbSet<PostingSkill> PostingSkills => Set<PostingSkill>();
