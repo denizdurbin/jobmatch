@@ -25,7 +25,12 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'Default' is missing");
 
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString, npgsql => npgsql.UseVector()));
+            options.UseNpgsql(connectionString, npgsql =>
+            {
+                npgsql.UseVector();
+                // postings load skills and embeddings together, split queries avoid a big cartesian join
+                npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            }));
 
         services.AddHttpClient<UrlTextFetcher>(client =>
         {
