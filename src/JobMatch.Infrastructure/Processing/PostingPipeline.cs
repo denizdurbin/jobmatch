@@ -92,13 +92,23 @@ public class PostingPipeline(AppDbContext db, PostingExtractor extractor, Embedd
         posting.Skills.Clear();
         foreach (var skill in result.Skills)
         {
-            posting.Skills.Add(new PostingSkill
+            foreach (string name in SkillAliases.SplitCombined(skill.Name))
             {
-                SkillName = skill.Name,
-                NormalizedName = SkillAliases.Normalize(skill.Name),
-                Required = skill.Required,
-                Evidence = skill.Evidence
-            });
+                string normalized = SkillAliases.Normalize(name);
+                // the same skill can come back twice once combined names are split
+                if (posting.Skills.Any(s => s.NormalizedName == normalized))
+                {
+                    continue;
+                }
+
+                posting.Skills.Add(new PostingSkill
+                {
+                    SkillName = name,
+                    NormalizedName = normalized,
+                    Required = skill.Required,
+                    Evidence = skill.Evidence
+                });
+            }
         }
 
         posting.Status = PostingStatus.Extracted;

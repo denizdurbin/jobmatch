@@ -46,4 +46,16 @@ public class SkillAliasesTests
         skills.ShouldNotContain("react");
         skills.ShouldNotContain("sql");
     }
+
+    [Theory]
+    [InlineData("C# / ASP.NET Core", new[] { "C#", "ASP.NET Core" })]
+    [InlineData("React, TypeScript et Node.js", new[] { "React", "TypeScript", "Node.js" })]
+    [InlineData("Docker & Kubernetes", new[] { "Docker", "Kubernetes" })]
+    [InlineData("CI/CD", new[] { "CI/CD" })]
+    [InlineData("C++", new[] { "C++" })]
+    [InlineData("Docker", new[] { "Docker" })]
+    public void SplitCombined_splits_skills_the_llm_put_together(string input, string[] expected)
+    {
+        SkillAliases.SplitCombined(input).ShouldBe(expected);
+    }
 }
