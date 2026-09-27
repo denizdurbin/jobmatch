@@ -10,5 +10,23 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+  # pulls the embedding model once, then exits
+  ollama-pull:
+    image: ollama/ollama
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c", "sleep 5 && ollama pull nomic-embed-text"]
+    restart: "no"
+
 volumes:
   pgdata:
+  ollama:
