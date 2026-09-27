@@ -2,6 +2,7 @@ using JobMatch.Core.Cv;
 using JobMatch.Core.Entities;
 using JobMatch.Infrastructure.Data;
 using JobMatch.Infrastructure.Embeddings;
+using JobMatch.Infrastructure.Matching;
 
 namespace JobMatch.Api.Endpoints;
 
@@ -16,6 +17,7 @@ public static class CvEndpoints
         var group = app.MapGroup("/cv").WithTags("CV");
 
         group.MapPost("/", UploadCv);
+        group.MapGet("/{id:guid}/matches", GetMatches);
     }
 
     private static async Task<IResult> UploadCv(CvUploadRequest request, AppDbContext db, EmbeddingService embeddings,
@@ -59,5 +61,16 @@ public static class CvEndpoints
         await db.SaveChangesAsync(ct);
 
         return Results.Created($"/cv/{profile.Id}", new CvCreatedResponse(profile.Id, profile.Name, profile.Sections.Select(s => s.Heading).ToList()));
+    }
+
+    private static async Task<IResult> GetMatches(Guid id, MatchingService matching, string? city, bool? remote, string? contract,
+        string? seniority, DateTime? since, int limit = 20, CancellationToken ct = default)
+    {
+        var matches = await matching.GetMatchesAsync(id, new MatchFilters(city, remote, contract, seniority, since, limit), ct);
+        if (matches == null)
+        {
+            return Results.NotFound();
+        }
+        return Results.Ok(matches);
     }
 }

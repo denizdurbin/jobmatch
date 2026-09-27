@@ -197,6 +197,8 @@ public static class PostingEndpoints
         }
         posting.Skills.Clear();
         posting.Embeddings.Clear();
+        // cached scores and gap reports for this posting are not valid anymore
+        await db.MatchResults.Where(m => m.PostingId == id).ExecuteDeleteAsync(ct);
         posting.Status = PostingStatus.Raw;
         posting.Error = null;
         await db.SaveChangesAsync(ct);

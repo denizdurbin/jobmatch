@@ -81,6 +81,43 @@ namespace JobMatch.Infrastructure.Data.Migrations
                     b.ToTable("CvSections");
                 });
 
+            modelBuilder.Entity("JobMatch.Core.Entities.MatchResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GapReportJson")
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("PostingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("Score")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("ScoreBreakdownJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostingId");
+
+                    b.HasIndex("ProfileId", "PostingId")
+                        .IsUnique();
+
+                    b.ToTable("MatchResults");
+                });
+
             modelBuilder.Entity("JobMatch.Core.Entities.Posting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -274,6 +311,21 @@ namespace JobMatch.Infrastructure.Data.Migrations
                 {
                     b.HasOne("JobMatch.Core.Entities.CvProfile", null)
                         .WithMany("Sections")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.MatchResult", b =>
+                {
+                    b.HasOne("JobMatch.Core.Entities.Posting", null)
+                        .WithMany()
+                        .HasForeignKey("PostingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JobMatch.Core.Entities.CvProfile", null)
+                        .WithMany()
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

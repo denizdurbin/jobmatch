@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PostingEmbedding> PostingEmbeddings => Set<PostingEmbedding>();
     public DbSet<CvProfile> CvProfiles => Set<CvProfile>();
     public DbSet<CvSection> CvSections => Set<CvSection>();
+    public DbSet<MatchResult> MatchResults => Set<MatchResult>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +69,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             section.Property(s => s.Vector).IsVector();
             section.HasIndex(s => s.Vector).HasMethod("hnsw").HasOperators("vector_cosine_ops");
+        });
+
+        modelBuilder.Entity<MatchResult>(match =>
+        {
+            match.Property(m => m.ScoreBreakdownJson).HasColumnType("jsonb");
+            match.Property(m => m.GapReportJson).HasColumnType("jsonb");
+            match.HasIndex(m => new { m.ProfileId, m.PostingId }).IsUnique();
+            match.HasOne<CvProfile>().WithMany().HasForeignKey(m => m.ProfileId).OnDelete(DeleteBehavior.Cascade);
+            match.HasOne<Posting>().WithMany().HasForeignKey(m => m.PostingId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

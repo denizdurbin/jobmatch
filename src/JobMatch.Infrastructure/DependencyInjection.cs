@@ -4,6 +4,7 @@ using JobMatch.Infrastructure.Data;
 using JobMatch.Infrastructure.Embeddings;
 using JobMatch.Infrastructure.Extraction;
 using JobMatch.Infrastructure.Ingestion;
+using JobMatch.Infrastructure.Matching;
 using JobMatch.Infrastructure.Processing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
@@ -61,6 +62,9 @@ public static class DependencyInjection
         services.AddScoped<PostingExtractor>();
         services.AddScoped<EmbeddingService>();
         services.AddScoped<PostingPipeline>();
+
+        services.Configure<MatchingOptions>(config.GetSection("Matching"));
+        services.AddScoped<MatchingService>();
 
         return services;
     }
