@@ -36,5 +36,6 @@ app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
 }).WithTags("Health");
 
 app.MapPostingEndpoints();
+app.MapCvEndpoints();
 
 app.Run();

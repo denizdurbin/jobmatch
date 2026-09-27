@@ -12,6 +12,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PostingExtraction> PostingExtractions => Set<PostingExtraction>();
     public DbSet<PostingSkill> PostingSkills => Set<PostingSkill>();
     public DbSet<PostingEmbedding> PostingEmbeddings => Set<PostingEmbedding>();
+    public DbSet<CvProfile> CvProfiles => Set<CvProfile>();
+    public DbSet<CvSection> CvSections => Set<CvSection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,6 +57,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             embedding.HasIndex(e => new { e.PostingId, e.Kind }).IsUnique();
             // HNSW index for fast nearest neighbour search with cosine distance
             embedding.HasIndex(e => e.Vector).HasMethod("hnsw").HasOperators("vector_cosine_ops");
+        });
+
+        modelBuilder.Entity<CvProfile>(profile =>
+        {
+            profile.HasMany(p => p.Sections).WithOne().HasForeignKey(s => s.ProfileId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CvSection>(section =>
+        {
+            section.Property(s => s.Vector).IsVector();
+            section.HasIndex(s => s.Vector).HasMethod("hnsw").HasOperators("vector_cosine_ops");
         });
     }
 }

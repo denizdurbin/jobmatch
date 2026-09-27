@@ -1,0 +1,63 @@
+using JobMatch.Core.Cv;
+using JobMatch.Core.Entities;
+using JobMatch.Infrastructure.Data;
+using JobMatch.Infrastructure.Embeddings;
+
+namespace JobMatch.Api.Endpoints;
+
+public record CvUploadRequest(string Name, string Text);
+
+public record CvCreatedResponse(Guid Id, string Name, List<string> Sections);
+
+public static class CvEndpoints
+{
+    public static void MapCvEndpoints(this WebApplication app)
+    {
+        var group = app.MapGroup("/cv").WithTags("CV");
+
+        group.MapPost("/", UploadCv);
+    }
+
+    private static async Task<IResult> UploadCv(CvUploadRequest request, AppDbContext db, EmbeddingService embeddings,
+        ILogger<CvUploadRequest> logger, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Text) || request.Text.Trim().Length < 100)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["text"] = ["Paste the full CV text (at least 100 characters)."]
+            });
+        }
+
+        var profile = new CvProfile
+        {
+            Id = Guid.NewGuid(),
+            Name = string.IsNullOrWhiteSpace(request.Name) ? "My CV" : request.Name.Trim(),
+            FullText = request.Text.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        try
+        {
+            foreach (var chunk in CvSplitter.Split(profile.FullText))
+            {
+                profile.Sections.Add(new CvSection
+                {
+                    Heading = chunk.Heading,
+                    Text = chunk.Text,
+                    Vector = await embeddings.EmbedAsync(chunk.Heading + "\n" + chunk.Text, ct)
+                });
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Embedding the CV failed");
+            return Results.Problem("The embedding service (Ollama) is not reachable. Is docker compose running?", statusCode: 503);
+        }
+
+        db.CvProfiles.Add(profile);
+        await db.SaveChangesAsync(ct);
+
+        return Results.Created($"/cv/{profile.Id}", new CvCreatedResponse(profile.Id, profile.Name, profile.Sections.Select(s => s.Heading).ToList()));
+    }
+}

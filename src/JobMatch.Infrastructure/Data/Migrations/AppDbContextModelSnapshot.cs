@@ -24,6 +24,63 @@ namespace JobMatch.Infrastructure.Data.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("JobMatch.Core.Entities.CvProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CvProfiles");
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.CvSection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Heading")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Vector>("Vector")
+                        .IsRequired()
+                        .HasColumnType("vector(768)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId");
+
+                    b.HasIndex("Vector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Vector"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Vector"), new[] { "vector_cosine_ops" });
+
+                    b.ToTable("CvSections");
+                });
+
             modelBuilder.Entity("JobMatch.Core.Entities.Posting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -213,6 +270,15 @@ namespace JobMatch.Infrastructure.Data.Migrations
                     b.ToTable("PostingSkills");
                 });
 
+            modelBuilder.Entity("JobMatch.Core.Entities.CvSection", b =>
+                {
+                    b.HasOne("JobMatch.Core.Entities.CvProfile", null)
+                        .WithMany("Sections")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("JobMatch.Core.Entities.PostingEmbedding", b =>
                 {
                     b.HasOne("JobMatch.Core.Entities.Posting", null)
@@ -238,6 +304,11 @@ namespace JobMatch.Infrastructure.Data.Migrations
                         .HasForeignKey("PostingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.CvProfile", b =>
+                {
+                    b.Navigation("Sections");
                 });
 
             modelBuilder.Entity("JobMatch.Core.Entities.Posting", b =>
