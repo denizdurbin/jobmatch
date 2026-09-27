@@ -107,7 +107,7 @@ public static class SkillAliases
         return key.Replace(' ', '-');
     }
 
-    // the LLM sometimes returns "C# / ASP.NET Core" as one skill, split it into "C#" and "ASP.NET Core".
+    // the LLM sometimes returns "C# / ASP.NET Core" or ".NET (C#)" as one skill, split them into separate skills.
     // known names with a slash in them (like "CI/CD") are kept as they are
     public static List<string> SplitCombined(string name)
     {
@@ -117,7 +117,7 @@ public static class SkillAliases
             return [trimmed];
         }
 
-        string[] separators = ["/", ",", " & ", " and ", " et "];
+        string[] separators = ["/", ",", "(", ")", " & ", " and ", " et "];
         var parts = trimmed.Split(separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (parts.Length == 0)
         {

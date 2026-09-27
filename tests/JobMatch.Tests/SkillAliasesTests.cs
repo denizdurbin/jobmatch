@@ -51,6 +51,7 @@ public class SkillAliasesTests
     [InlineData("C# / ASP.NET Core", new[] { "C#", "ASP.NET Core" })]
     [InlineData("React, TypeScript et Node.js", new[] { "React", "TypeScript", "Node.js" })]
     [InlineData("Docker & Kubernetes", new[] { "Docker", "Kubernetes" })]
+    [InlineData(".NET (C# / ASP.NET Core)", new[] { ".NET", "C#", "ASP.NET Core" })]
     [InlineData("CI/CD", new[] { "CI/CD" })]
     [InlineData("C++", new[] { "C++" })]
     [InlineData("Docker", new[] { "Docker" })]
