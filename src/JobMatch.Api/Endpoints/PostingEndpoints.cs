@@ -183,6 +183,7 @@ public static class PostingEndpoints
         var posting = await db.Postings
             .Include(p => p.Extraction)
             .Include(p => p.Skills)
+            .Include(p => p.Embeddings)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
         if (posting == null)
         {
@@ -195,6 +196,7 @@ public static class PostingEndpoints
             db.PostingExtractions.Remove(posting.Extraction);
         }
         posting.Skills.Clear();
+        posting.Embeddings.Clear();
         posting.Status = PostingStatus.Raw;
         posting.Error = null;
         await db.SaveChangesAsync(ct);

@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Posting> Postings => Set<Posting>();
     public DbSet<PostingExtraction> PostingExtractions => Set<PostingExtraction>();
     public DbSet<PostingSkill> PostingSkills => Set<PostingSkill>();
+    public DbSet<PostingEmbedding> PostingEmbeddings => Set<PostingEmbedding>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +29,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             posting.HasOne(p => p.Extraction).WithOne().HasForeignKey<PostingExtraction>(e => e.PostingId).OnDelete(DeleteBehavior.Cascade);
             posting.HasMany(p => p.Skills).WithOne().HasForeignKey(s => s.PostingId).OnDelete(DeleteBehavior.Cascade);
+            posting.HasMany(p => p.Embeddings).WithOne().HasForeignKey(e => e.PostingId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<PostingExtraction>(extraction =>
@@ -44,6 +46,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<PostingSkill>(skill =>
         {
             skill.HasIndex(s => s.NormalizedName);
+        });
+
+        modelBuilder.Entity<PostingEmbedding>(embedding =>
+        {
+            embedding.Property(e => e.Kind).HasConversion<string>().HasMaxLength(20);
+            embedding.Property(e => e.Vector).IsVector();
+            embedding.HasIndex(e => new { e.PostingId, e.Kind }).IsUnique();
+            // HNSW index for fast nearest neighbour search with cosine distance
+            embedding.HasIndex(e => e.Vector).HasMethod("hnsw").HasOperators("vector_cosine_ops");
         });
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Pgvector;
 
 #nullable disable
 
@@ -77,6 +78,39 @@ namespace JobMatch.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Postings");
+                });
+
+            modelBuilder.Entity("JobMatch.Core.Entities.PostingEmbedding", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("PostingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Vector>("Vector")
+                        .IsRequired()
+                        .HasColumnType("vector(768)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Vector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Vector"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Vector"), new[] { "vector_cosine_ops" });
+
+                    b.HasIndex("PostingId", "Kind")
+                        .IsUnique();
+
+                    b.ToTable("PostingEmbeddings");
                 });
 
             modelBuilder.Entity("JobMatch.Core.Entities.PostingExtraction", b =>
@@ -179,6 +213,15 @@ namespace JobMatch.Infrastructure.Data.Migrations
                     b.ToTable("PostingSkills");
                 });
 
+            modelBuilder.Entity("JobMatch.Core.Entities.PostingEmbedding", b =>
+                {
+                    b.HasOne("JobMatch.Core.Entities.Posting", null)
+                        .WithMany("Embeddings")
+                        .HasForeignKey("PostingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("JobMatch.Core.Entities.PostingExtraction", b =>
                 {
                     b.HasOne("JobMatch.Core.Entities.Posting", null)
@@ -199,6 +242,8 @@ namespace JobMatch.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("JobMatch.Core.Entities.Posting", b =>
                 {
+                    b.Navigation("Embeddings");
+
                     b.Navigation("Extraction");
 
                     b.Navigation("Skills");

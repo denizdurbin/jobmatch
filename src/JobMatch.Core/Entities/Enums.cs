@@ -13,3 +13,9 @@ public enum PostingStatus
     Embedded,
     Failed
 }
+
+public enum EmbeddingKind
+{
+    FullText,
+    Skills
+}

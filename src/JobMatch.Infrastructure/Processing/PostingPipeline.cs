@@ -2,20 +2,22 @@ using System.Text.Json;
 using JobMatch.Core.Entities;
 using JobMatch.Core.Skills;
 using JobMatch.Infrastructure.Data;
+using JobMatch.Infrastructure.Embeddings;
 using JobMatch.Infrastructure.Extraction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace JobMatch.Infrastructure.Processing;
 
-// Raw -> Extracted (-> Embedded later), anything that throws -> Failed
-public class PostingPipeline(AppDbContext db, PostingExtractor extractor, ILogger<PostingPipeline> logger)
+// Raw -> Extracted -> Embedded, anything that throws -> Failed
+public class PostingPipeline(AppDbContext db, PostingExtractor extractor, EmbeddingService embeddings, ILogger<PostingPipeline> logger)
 {
     public async Task ProcessAsync(Guid postingId, CancellationToken ct = default)
     {
         var posting = await db.Postings
             .Include(p => p.Extraction)
             .Include(p => p.Skills)
+            .Include(p => p.Embeddings)
             .FirstOrDefaultAsync(p => p.Id == postingId, ct);
         if (posting == null)
         {
@@ -28,6 +30,10 @@ public class PostingPipeline(AppDbContext db, PostingExtractor extractor, ILogge
             if (posting.Status == PostingStatus.Raw)
             {
                 await ExtractAsync(posting, ct);
+            }
+            if (posting.Status == PostingStatus.Extracted)
+            {
+                await EmbedAsync(posting, ct);
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -99,5 +105,30 @@ public class PostingPipeline(AppDbContext db, PostingExtractor extractor, ILogge
         posting.Error = null;
         await db.SaveChangesAsync(ct);
         logger.LogInformation("Posting {Id} extracted: {SkillCount} skills", posting.Id, posting.Skills.Count);
+    }
+
+    private async Task EmbedAsync(Posting posting, CancellationToken ct)
+    {
+        posting.Embeddings.Clear();
+
+        posting.Embeddings.Add(new PostingEmbedding
+        {
+            Kind = EmbeddingKind.FullText,
+            Vector = await embeddings.EmbedAsync(posting.RawText, ct)
+        });
+
+        if (posting.Skills.Count > 0)
+        {
+            string skillsText = string.Join(", ", posting.Skills.Select(s => s.SkillName));
+            posting.Embeddings.Add(new PostingEmbedding
+            {
+                Kind = EmbeddingKind.Skills,
+                Vector = await embeddings.EmbedAsync(skillsText, ct)
+            });
+        }
+
+        posting.Status = PostingStatus.Embedded;
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation("Posting {Id} embedded", posting.Id);
     }
 }

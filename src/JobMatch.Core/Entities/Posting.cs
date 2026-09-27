@@ -16,4 +16,5 @@ public class Posting
 
     public PostingExtraction? Extraction { get; set; }
     public List<PostingSkill> Skills { get; set; } = new();
+    public List<PostingEmbedding> Embeddings { get; set; } = new();
 }
