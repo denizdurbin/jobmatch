@@ -3,6 +3,7 @@ using JobMatch.Infrastructure.Ai;
 using JobMatch.Infrastructure.Data;
 using JobMatch.Infrastructure.Embeddings;
 using JobMatch.Infrastructure.Extraction;
+using JobMatch.Infrastructure.Gap;
 using JobMatch.Infrastructure.Ingestion;
 using JobMatch.Infrastructure.Matching;
 using JobMatch.Infrastructure.Processing;
@@ -65,6 +66,7 @@ public static class DependencyInjection
 
         services.Configure<MatchingOptions>(config.GetSection("Matching"));
         services.AddScoped<MatchingService>();
+        services.AddScoped<GapReportService>();
 
         return services;
     }

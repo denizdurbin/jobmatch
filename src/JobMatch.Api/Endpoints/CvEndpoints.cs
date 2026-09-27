@@ -2,6 +2,7 @@ using JobMatch.Core.Cv;
 using JobMatch.Core.Entities;
 using JobMatch.Infrastructure.Data;
 using JobMatch.Infrastructure.Embeddings;
+using JobMatch.Infrastructure.Gap;
 using JobMatch.Infrastructure.Matching;
 
 namespace JobMatch.Api.Endpoints;
@@ -18,6 +19,7 @@ public static class CvEndpoints
 
         group.MapPost("/", UploadCv);
         group.MapGet("/{id:guid}/matches", GetMatches);
+        group.MapPost("/{id:guid}/matches/{postingId:guid}/gap", GetGapReport);
     }
 
     private static async Task<IResult> UploadCv(CvUploadRequest request, AppDbContext db, EmbeddingService embeddings,
@@ -72,5 +74,26 @@ public static class CvEndpoints
             return Results.NotFound();
         }
         return Results.Ok(matches);
+    }
+
+    private static async Task<IResult> GetGapReport(Guid id, Guid postingId, GapReportService gapReports, CancellationToken ct)
+    {
+        try
+        {
+            var report = await gapReports.GetOrCreateAsync(id, postingId, ct);
+            if (report == null)
+            {
+                return Results.NotFound();
+            }
+            return Results.Ok(report);
+        }
+        catch (PostingNotReadyException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: 409);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: 502);
+        }
     }
 }
